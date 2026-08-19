@@ -2,7 +2,7 @@
   "id": "e3f2b845-8f2c-4b5a-9caf-eac1029d3e7e",
   "revision": 0,
   "last_node_id": 204,
-  "last_link_id": 392,
+  "last_link_id": 393,
   "nodes": [
     {
       "id": 128,
@@ -602,82 +602,6 @@
       }
     },
     {
-      "id": 137,
-      "type": "ImageScaleToTotalPixelsX",
-      "pos": [
-        -1440.6011428368333,
-        5825.32752639272
-      ],
-      "size": [
-        306.5982421875,
-        214
-      ],
-      "flags": {},
-      "order": 14,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "link": 388
-        },
-        {
-          "name": "width",
-          "shape": 7,
-          "type": "INT",
-          "link": null
-        },
-        {
-          "name": "height",
-          "shape": 7,
-          "type": "INT",
-          "link": null
-        }
-      ],
-      "outputs": [
-        {
-          "name": "image",
-          "type": "IMAGE",
-          "links": [
-            341,
-            379
-          ]
-        },
-        {
-          "name": "width",
-          "type": "INT",
-          "links": [
-            369,
-            370,
-            383,
-            384
-          ]
-        },
-        {
-          "name": "height",
-          "type": "INT",
-          "links": []
-        }
-      ],
-      "properties": {
-        "cnr_id": "scale-image-to-total-pixels-advanced",
-        "ver": "79e831097bb7a76ade3a28359300e62332086c42",
-        "Node name for S&R": "ImageScaleToTotalPixelsX"
-      },
-      "widgets_values": [
-        0.6,
-        32,
-        "crop",
-        "lanczos"
-      ],
-      "widgets_values_named": {
-        "megapixels": 0.6,
-        "multiple_of": 32,
-        "resize_mode": "crop",
-        "upscale_method": "lanczos"
-      }
-    },
-    {
       "id": 199,
       "type": "LoadImage",
       "pos": [
@@ -1203,7 +1127,7 @@
           "widget": {
             "name": "height"
           },
-          "link": 384
+          "link": 393
         },
         {
           "name": "length",
@@ -1231,6 +1155,8 @@
         }
       ],
       "properties": {
+        "cnr_id": "comfyui-minimax-h3-image-and-reference-to-video",
+        "ver": "1748774af0463b6c25d3985d104bc4a221878dde",
         "Node name for S&R": "MiniMaxH3ImageAndReferenceToVideo"
       },
       "widgets_values": [
@@ -1246,6 +1172,83 @@
         "height": 768,
         "length": 124,
         "ref_image_size": "match"
+      }
+    },
+    {
+      "id": 137,
+      "type": "ImageScaleToTotalPixelsX",
+      "pos": [
+        -1440.6011428368333,
+        5825.32752639272
+      ],
+      "size": [
+        306.5982421875,
+        214
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 388
+        },
+        {
+          "name": "width",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        },
+        {
+          "name": "height",
+          "shape": 7,
+          "type": "INT",
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            341,
+            379
+          ]
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": [
+            369,
+            370,
+            383
+          ]
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": [
+            393
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "scale-image-to-total-pixels-advanced",
+        "ver": "79e831097bb7a76ade3a28359300e62332086c42",
+        "Node name for S&R": "ImageScaleToTotalPixelsX"
+      },
+      "widgets_values": [
+        0.6,
+        32,
+        "crop",
+        "lanczos"
+      ],
+      "widgets_values_named": {
+        "megapixels": 0.6,
+        "multiple_of": 32,
+        "resize_mode": "crop",
+        "upscale_method": "lanczos"
       }
     }
   ],
@@ -1427,14 +1430,6 @@
       "INT"
     ],
     [
-      384,
-      137,
-      1,
-      196,
-      11,
-      "INT"
-    ],
-    [
       385,
       134,
       1,
@@ -1481,6 +1476,14 @@
       201,
       1,
       "AUDIO"
+    ],
+    [
+      393,
+      137,
+      2,
+      196,
+      11,
+      "INT"
     ]
   ],
   "groups": [],
@@ -1492,10 +1495,10 @@
     "VHS_MetadataImage": true,
     "VHS_KeepIntermediate": true,
     "ds": {
-      "scale": 0.19487171000000036,
+      "scale": 0.5559917313492245,
       "offset": [
-        3651.9168483195945,
-        -3612.677681155701
+        1851.4695331344863,
+        -4925.031259127155
       ]
     }
   },
