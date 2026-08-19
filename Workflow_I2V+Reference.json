@@ -1,8 +1,8 @@
 {
   "id": "e3f2b845-8f2c-4b5a-9caf-eac1029d3e7e",
   "revision": 0,
-  "last_node_id": 204,
-  "last_link_id": 393,
+  "last_node_id": 205,
+  "last_link_id": 402,
   "nodes": [
     {
       "id": 128,
@@ -27,7 +27,7 @@
         {
           "name": "conditioning",
           "type": "CONDITIONING",
-          "link": 381
+          "link": 400
         }
       ],
       "outputs": [
@@ -83,7 +83,7 @@
         {
           "name": "latent_image",
           "type": "LATENT",
-          "link": 382
+          "link": 401
         }
       ],
       "outputs": [
@@ -284,7 +284,7 @@
           "type": "VAE",
           "links": [
             229,
-            378
+            395
           ]
         }
       ],
@@ -439,7 +439,7 @@
           "name": "INT",
           "type": "INT",
           "links": [
-            385
+            399
           ]
         },
         {
@@ -531,24 +531,24 @@
       }
     },
     {
-      "id": 193,
+      "id": 137,
       "type": "ImageScaleToTotalPixelsX",
       "pos": [
-        -1443.7272774254927,
-        6123.985969080996
+        -1440.6011428368333,
+        5825.32752639272
       ],
       "size": [
         306.5982421875,
         214
       ],
       "flags": {},
-      "order": 15,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 389
+          "link": 388
         },
         {
           "name": "width",
@@ -568,14 +568,19 @@
           "name": "image",
           "type": "IMAGE",
           "links": [
-            375,
-            380
+            341,
+            396
           ]
         },
         {
           "name": "width",
           "type": "INT",
-          "links": []
+          "links": [
+            369,
+            370,
+            397,
+            398
+          ]
         },
         {
           "name": "height",
@@ -966,7 +971,7 @@
           "type": "VAE",
           "links": [
             230,
-            377
+            394
           ]
         }
       ],
@@ -1009,7 +1014,7 @@
           "name": "CLIP",
           "type": "CLIP",
           "links": [
-            376
+            393
           ]
         }
       ],
@@ -1037,7 +1042,7 @@
       }
     },
     {
-      "id": 196,
+      "id": 205,
       "type": "MiniMaxH3ImageAndReferenceToVideo",
       "pos": [
         -1048.337368691478,
@@ -1054,23 +1059,23 @@
         {
           "name": "clip",
           "type": "CLIP",
-          "link": 376
+          "link": 393
         },
         {
           "name": "vae",
           "type": "VAE",
-          "link": 377
+          "link": 394
         },
         {
           "name": "audio_vae",
           "type": "VAE",
-          "link": 378
+          "link": 395
         },
         {
           "name": "first_frame",
           "shape": 7,
           "type": "IMAGE",
-          "link": 379
+          "link": 396
         },
         {
           "name": "last_frame",
@@ -1079,36 +1084,36 @@
           "link": null
         },
         {
-          "label": "ref_image_0",
-          "name": "ref_images.ref_image_0",
-          "shape": 7,
-          "type": "IMAGE",
-          "link": 380
-        },
-        {
           "label": "ref_image_1",
           "name": "ref_images.ref_image_1",
           "shape": 7,
           "type": "IMAGE",
-          "link": null
+          "link": 402
         },
         {
-          "label": "ref_video_0",
-          "name": "ref_videos.ref_video_0",
+          "label": "ref_image_2",
+          "name": "ref_images.ref_image_2",
           "shape": 7,
           "type": "IMAGE",
           "link": null
         },
         {
-          "label": "ref_video_audio_0",
-          "name": "ref_video_audios.ref_video_audio_0",
+          "label": "ref_video_1",
+          "name": "ref_videos.ref_video_1",
+          "shape": 7,
+          "type": "IMAGE",
+          "link": null
+        },
+        {
+          "label": "ref_video_audio_1",
+          "name": "ref_video_audios.ref_video_audio_1",
           "shape": 7,
           "type": "AUDIO",
           "link": null
         },
         {
-          "label": "ref_audio_0",
-          "name": "ref_audios.ref_audio_0",
+          "label": "ref_audio_1",
+          "name": "ref_audios.ref_audio_1",
           "shape": 7,
           "type": "AUDIO",
           "link": null
@@ -1119,7 +1124,7 @@
           "widget": {
             "name": "width"
           },
-          "link": 383
+          "link": 397
         },
         {
           "name": "height",
@@ -1127,7 +1132,7 @@
           "widget": {
             "name": "height"
           },
-          "link": 393
+          "link": 398
         },
         {
           "name": "length",
@@ -1135,7 +1140,7 @@
           "widget": {
             "name": "length"
           },
-          "link": 385
+          "link": 399
         }
       ],
       "outputs": [
@@ -1143,14 +1148,14 @@
           "name": "positive",
           "type": "CONDITIONING",
           "links": [
-            381
+            400
           ]
         },
         {
           "name": "LATENT",
           "type": "LATENT",
           "links": [
-            382
+            401
           ]
         }
       ],
@@ -1175,24 +1180,24 @@
       }
     },
     {
-      "id": 137,
+      "id": 193,
       "type": "ImageScaleToTotalPixelsX",
       "pos": [
-        -1440.6011428368333,
-        5825.32752639272
+        -1443.7272774254927,
+        6123.985969080996
       ],
       "size": [
         306.5982421875,
         214
       ],
       "flags": {},
-      "order": 14,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
           "name": "image",
           "type": "IMAGE",
-          "link": 388
+          "link": 389
         },
         {
           "name": "width",
@@ -1212,25 +1217,19 @@
           "name": "image",
           "type": "IMAGE",
           "links": [
-            341,
-            379
+            375,
+            402
           ]
         },
         {
           "name": "width",
           "type": "INT",
-          "links": [
-            369,
-            370,
-            383
-          ]
+          "links": []
         },
         {
           "name": "height",
           "type": "INT",
-          "links": [
-            393
-          ]
+          "links": []
         }
       ],
       "properties": {
@@ -1366,78 +1365,6 @@
       "IMAGE"
     ],
     [
-      376,
-      130,
-      0,
-      196,
-      0,
-      "CLIP"
-    ],
-    [
-      377,
-      121,
-      0,
-      196,
-      1,
-      "VAE"
-    ],
-    [
-      378,
-      122,
-      0,
-      196,
-      2,
-      "VAE"
-    ],
-    [
-      379,
-      137,
-      0,
-      196,
-      3,
-      "IMAGE"
-    ],
-    [
-      380,
-      193,
-      0,
-      196,
-      5,
-      "IMAGE"
-    ],
-    [
-      381,
-      196,
-      0,
-      128,
-      1,
-      "CONDITIONING"
-    ],
-    [
-      382,
-      196,
-      1,
-      127,
-      4,
-      "LATENT"
-    ],
-    [
-      383,
-      137,
-      1,
-      196,
-      10,
-      "INT"
-    ],
-    [
-      385,
-      134,
-      1,
-      196,
-      12,
-      "INT"
-    ],
-    [
       388,
       199,
       0,
@@ -1479,11 +1406,83 @@
     ],
     [
       393,
-      137,
+      130,
+      0,
+      205,
+      0,
+      "CLIP"
+    ],
+    [
+      394,
+      121,
+      0,
+      205,
+      1,
+      "VAE"
+    ],
+    [
+      395,
+      122,
+      0,
+      205,
       2,
-      196,
+      "VAE"
+    ],
+    [
+      396,
+      137,
+      0,
+      205,
+      3,
+      "IMAGE"
+    ],
+    [
+      397,
+      137,
+      1,
+      205,
+      10,
+      "INT"
+    ],
+    [
+      398,
+      137,
+      1,
+      205,
       11,
       "INT"
+    ],
+    [
+      399,
+      134,
+      1,
+      205,
+      12,
+      "INT"
+    ],
+    [
+      400,
+      205,
+      0,
+      128,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      401,
+      205,
+      1,
+      127,
+      4,
+      "LATENT"
+    ],
+    [
+      402,
+      193,
+      0,
+      205,
+      5,
+      "IMAGE"
     ]
   ],
   "groups": [],
@@ -1495,10 +1494,10 @@
     "VHS_MetadataImage": true,
     "VHS_KeepIntermediate": true,
     "ds": {
-      "scale": 0.5559917313492245,
+      "scale": 0.6727499949325618,
       "offset": [
-        1851.4695331344863,
-        -4925.031259127155
+        1640.0632212726002,
+        -4268.25995666779
       ]
     }
   },
