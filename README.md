@@ -14,3 +14,11 @@ Navigate to the **ComfyUI\custom_nodes** folder, [open cmd](https://www.youtube.
 git clone https://github.com/BigStationW/ComfyUi-MiniMax-H3-Image-And-Reference-To-Video
 ```
 Restart ComfyUI after installation.
+
+## Hybrid model
+
+You need an hybrid version of MiniMax-H3 to make both I2V and reference images work:
+
+https://huggingface.co/smhfacct/Minimax-H3-fl2va-ref2va-hybrid-models
+
+(b20-49 works fine on my end)
