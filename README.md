@@ -37,7 +37,7 @@ https://huggingface.co/smhfacct/Minimax-H3-fl2va-ref2va-hybrid-models
 
 - During the denoising process, the DiT model is caught in a tug-of-war: the text cross-attention is pulling the generation in one direction (pure text context), while the latent injection forces it into the keyframe pixels. This mismatch manifests as color shifts, warping, unnatural transitions, flickering, etc.
 
-Even if we set aside the technical explanation, you can make comparison and notice that the quality is lower when using ```Add Guide for MiniMax H3 + MiniMax H3 Reference to Video``` rather than using this custom node.
+Even if we set aside the technical explanation, you can make comparisons and notice that the quality is lower when using ```Add Guide for MiniMax H3 + MiniMax H3 Reference to Video``` rather than using this custom node.
 
 [Comparison.webm](https://github.com/user-attachments/assets/e99d216d-4dcd-42f7-ab16-29b6548e9fed)
 
