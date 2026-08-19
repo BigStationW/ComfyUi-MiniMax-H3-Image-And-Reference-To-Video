@@ -33,11 +33,11 @@ https://huggingface.co/smhfacct/Minimax-H3-fl2va-ref2va-hybrid-models
 
 ### Add Guide for MiniMax H3 + MiniMax H3 Reference to Video
 
-- In ```Add Guide for MiniMax H3```, only the DiT receives the frame latents. The text encoder never sees those images. This is an issue as the text encoder will build text embeddings while being completely unaware of the scene's starting lighting, geometry, and camera angle.
+- In ```Add Guide for MiniMax H3```, only the DiT receives the frame latents. The text encoder never sees those images. This is an issue as the text encoder will build text embeddings while being completely unaware of the scene's lighting, geometry, and camera angle.
 
-- During the denoising process, the DiT is caught in a tug-of-war: the text cross-attention is pulling the generation in one direction (pure text context), while the latent injection forces it into the keyframe pixels. This mismatch manifests as color shifts, warping, unnatural transitions, flickering, etc.
+- During the denoising process, the DiT model is caught in a tug-of-war: the text cross-attention is pulling the generation in one direction (pure text context), while the latent injection forces it into the keyframe pixels. This mismatch manifests as color shifts, warping, unnatural transitions, flickering, etc.
 
-Even if we set aside the technical explanation, you can see from the videos that the quality is lower when using ```Add Guide for MiniMax H3 + MiniMax H3 Reference to Video``` rather than using this custom node.
+Even if we set aside the technical explanation, you can make comparison and notice that the quality is lower when using ```Add Guide for MiniMax H3 + MiniMax H3 Reference to Video``` rather than using this custom node.
 
 [Comparison.webm](https://github.com/user-attachments/assets/e99d216d-4dcd-42f7-ab16-29b6548e9fed)
 
