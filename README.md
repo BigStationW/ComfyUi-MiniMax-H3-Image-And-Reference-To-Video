@@ -1,4 +1,4 @@
-# ComfyUi-Image-And-Reference-To-Video
+# ComfyUi-MiniMax-H3-Image-And-Reference-To-Video
 
 This custom node lets you use I2V and reference images on MiniMax-H3 simultaneously.
 
