@@ -1,0 +1,17 @@
+[project]
+name = "comfyui-minimax-h3-image-and-reference-to-video"
+description = "A ComfyUI custom node for MiniMax H3 Image And Reference To Video."
+version = "1.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/BigStationW/ComfyUi-MiniMax-H3-Image-And-Reference-To-Video"
+Documentation = "https://github.com/BigStationW/ComfyUi-MiniMax-H3-Image-And-Reference-To-Video/wiki"
+"Bug Tracker" = "https://github.com/BigStationW/ComfyUi-MiniMax-H3-Image-And-Reference-To-Video/issues"
+
+[tool.comfy]
+PublisherId = "bigstationw"
+DisplayName = "ComfyUi-MiniMax-H3-Image-And-Reference-To-Video"
+Icon = ""
+includes = []
+# "requires-comfyui" = ">=1.0.0"
