@@ -68,39 +68,43 @@ class MiniMaxH3ImageAndReferenceToVideo(io.ComfyNode):
                 ),
                 io.Autogrow.Input(
                     "ref_images", optional=True,
-                    template=io.Autogrow.TemplatePrefix(
+                    template=io.Autogrow.TemplateNames(
                         input=io.Image.Input(
                             "ref_image",
                             tooltip="Reference image (downscaled to 2048 short edge if "
                                     "larger, never upscaled)",
                         ),
-                        prefix="ref_image_", min=0, max=9,
+                        names=[f"ref_image_{i}" for i in range(1, 11)], # 1 through 10
+                        min=0, 
                     ),
                 ),
                 io.Autogrow.Input(
                     "ref_videos", optional=True,
-                    template=io.Autogrow.TemplatePrefix(
+                    template=io.Autogrow.TemplateNames(
                         input=io.Image.Input(
                             "ref_video", tooltip="Reference video frames at 24 fps (2-15s)"
                         ),
-                        prefix="ref_video_", min=0, max=3,
+                        names=[f"ref_video_{i}" for i in range(1, 5)], # 1 through 4
+                        min=0,
                     ),
                 ),
                 io.Autogrow.Input(
                     "ref_video_audios", optional=True,
-                    template=io.Autogrow.TemplatePrefix(
+                    template=io.Autogrow.TemplateNames(
                         input=io.Audio.Input(
                             "ref_video_audio",
                             tooltip="Soundtrack of the same-numbered reference video",
                         ),
-                        prefix="ref_video_audio_", min=0, max=3,
+                        names=[f"ref_video_audio_{i}" for i in range(1, 5)], # 1 through 4
+                        min=0,
                     ),
                 ),
                 io.Autogrow.Input(
                     "ref_audios", optional=True,
-                    template=io.Autogrow.TemplatePrefix(
+                    template=io.Autogrow.TemplateNames(
                         input=io.Audio.Input("ref_audio", tooltip="Standalone reference audio"),
-                        prefix="ref_audio_", min=0, max=3,
+                        names=[f"ref_audio_{i}" for i in range(1, 5)], # 1 through 4
+                        min=0,
                     ),
                 ),
             ],
