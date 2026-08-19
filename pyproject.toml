@@ -1,7 +1,7 @@
 [project]
 name = "comfyui-minimax-h3-image-and-reference-to-video"
 description = "A ComfyUI custom node for MiniMax H3 Image And Reference To Video."
-version = "1.0.1"
+version = "1.0.2"
 license = {file = "LICENSE"}
 
 [project.urls]
