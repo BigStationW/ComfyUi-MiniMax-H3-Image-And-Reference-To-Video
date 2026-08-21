@@ -279,11 +279,8 @@ def _minimax_h3_hybrid_state_dict(fl2va_path, ref2va_path, ref_start_block, ref_
     return sd
 
 
-def _load_minimax_h3_hybrid(fl2va_path, ref2va_path, ref_start_block=25, ref_end_block=49, weight_dtype="default", disable_dynamic=False):
-    sd = _minimax_h3_hybrid_state_dict(
-        fl2va_path, ref2va_path, ref_start_block, ref_end_block
-    )
-
+def _diffusion_model_options(weight_dtype="default"):
+    """Match ComfyUI's stock Load Diffusion Model weight-dtype options."""
     model_options = {}
     if weight_dtype == "fp8_e4m3fn":
         model_options["dtype"] = torch.float8_e4m3fn
@@ -292,6 +289,15 @@ def _load_minimax_h3_hybrid(fl2va_path, ref2va_path, ref_start_block=25, ref_end
         model_options["fp8_optimizations"] = True
     elif weight_dtype == "fp8_e5m2":
         model_options["dtype"] = torch.float8_e5m2
+    return model_options
+
+
+def _load_minimax_h3_hybrid(fl2va_path, ref2va_path, ref_start_block=25, ref_end_block=49, weight_dtype="default", disable_dynamic=False):
+    sd = _minimax_h3_hybrid_state_dict(
+        fl2va_path, ref2va_path, ref_start_block, ref_end_block
+    )
+
+    model_options = _diffusion_model_options(weight_dtype)
 
     model = comfy.sd.load_diffusion_model_state_dict(
         sd, model_options=model_options, metadata={}, disable_dynamic=disable_dynamic
@@ -316,46 +322,102 @@ class MiniMaxH3HybridModelLoader(io.ComfyNode):
         model_files = folder_paths.get_filename_list("diffusion_models")
         return io.Schema(
             node_id="MiniMaxH3HybridModelLoader",
-            display_name="MiniMax H3 Hybrid Model Loader",
+            display_name="MiniMax H3 Model Loader",
             description=(
-                "Loads one MiniMax H3 MODEL from fl2va + ref2va checkpoints. "
-                "Everything comes from fl2va except per-block adaln_proj tensors "
-                "inside the selected inclusive block range, which come from ref2va."
+                "Loads MiniMax H3 as either an on-the-fly fl2va+ref2va hybrid, a standalone "
+                "fl2va model, or a standalone ref2va model. Hybrid mode uses ref2va adaln_proj "
+                "tensors only in the selected block range. Standalone modes use ComfyUI's "
+                "standard Load Diffusion Model path and ignore the block range."
             ),
             category="model/loaders",
             inputs=[
+                # Keep the original widget names/order for better saved-workflow compatibility.
                 io.Combo.Input(
                     "fl2va_model", options=model_files,
-                    tooltip="Base MiniMax H3 fl2va diffusion checkpoint.",
+                    tooltip=(
+                        "FL2VA checkpoint. Used by 'load fl2va+ref2va' and "
+                        "'load fl2va model'; ignored by 'load ref2va model'."
+                    ),
                 ),
                 io.Combo.Input(
                     "ref2va_model", options=model_files,
-                    tooltip="Matching MiniMax H3 ref2va diffusion checkpoint.",
+                    tooltip=(
+                        "REF2VA checkpoint. Used by 'load fl2va+ref2va' and "
+                        "'load ref2va model'; ignored by 'load fl2va model'."
+                    ),
                 ),
                 io.Int.Input(
                     "ref_start_block", default=25, min=0, max=49, step=1,
-                    tooltip="First transformer block whose adaln_proj comes from ref2va (inclusive).",
+                    tooltip=(
+                        "Hybrid mode only: first transformer block whose adaln_proj comes from "
+                        "ref2va_model (inclusive). Ignored in standalone modes."
+                    ),
                 ),
                 io.Int.Input(
                     "ref_end_block", default=49, min=0, max=49, step=1,
-                    tooltip="Last transformer block whose adaln_proj comes from ref2va (inclusive).",
+                    tooltip=(
+                        "Hybrid mode only: last transformer block whose adaln_proj comes from "
+                        "ref2va_model (inclusive). Ignored in standalone modes."
+                    ),
                 ),
                 io.Combo.Input(
                     "weight_dtype",
                     options=["default", "fp8_e4m3fn", "fp8_e4m3fn_fast", "fp8_e5m2"],
                     default="default",
                     advanced=True,
-                    tooltip="Same override as ComfyUI's Load Diffusion Model. Usually leave at default.",
+                    tooltip="Same weight dtype override as ComfyUI's Load Diffusion Model node.",
+                ),
+                # Appended instead of inserted earlier so legacy widget_values keep their positions.
+                io.Combo.Input(
+                    "load_mode",
+                    options=["load fl2va+ref2va", "load fl2va model", "load ref2va model"],
+                    default="load fl2va+ref2va",
+                    tooltip=(
+                        "Hybrid (default): merge fl2va_model + ref2va_model on the fly. "
+                        "FL2VA: load only fl2va_model. REF2VA: load only ref2va_model. "
+                        "The ref block range is ignored in standalone modes."
+                    ),
                 ),
             ],
             outputs=[io.Model.Output(display_name="model")],
         )
 
     @classmethod
-    def execute(cls, fl2va_model, ref2va_model, ref_start_block, ref_end_block, weight_dtype="default") -> io.NodeOutput:
+    def execute(
+        cls, fl2va_model, ref2va_model, ref_start_block, ref_end_block,
+        weight_dtype="default", load_mode="load fl2va+ref2va",
+    ) -> io.NodeOutput:
+        # Backward compatibility for workflows saved with v5 dropdown values.
+        if load_mode == "load dual model":
+            load_mode = "load fl2va+ref2va"
+        elif load_mode == "load single model":
+            load_mode = "load fl2va model"
+
+        model_options = _diffusion_model_options(weight_dtype)
+
+        if load_mode == "load fl2va model":
+            fl2va_path = folder_paths.get_full_path_or_raise("diffusion_models", fl2va_model)
+            model = comfy.sd.load_diffusion_model(fl2va_path, model_options=model_options)
+            print(
+                f"[MiniMax H3 Loader] standalone fl2va={fl2va_model} "
+                f"weight_dtype={weight_dtype}; ref2va/range ignored"
+            )
+            return io.NodeOutput(model)
+
+        if load_mode == "load ref2va model":
+            ref2va_path = folder_paths.get_full_path_or_raise("diffusion_models", ref2va_model)
+            model = comfy.sd.load_diffusion_model(ref2va_path, model_options=model_options)
+            print(
+                f"[MiniMax H3 Loader] standalone ref2va={ref2va_model} "
+                f"weight_dtype={weight_dtype}; fl2va/range ignored"
+            )
+            return io.NodeOutput(model)
+
+        if load_mode != "load fl2va+ref2va":
+            raise ValueError(f"Unknown MiniMax H3 loader mode: {load_mode!r}")
+
         fl2va_path = folder_paths.get_full_path_or_raise("diffusion_models", fl2va_model)
         ref2va_path = folder_paths.get_full_path_or_raise("diffusion_models", ref2va_model)
-
         model = _load_minimax_h3_hybrid(
             fl2va_path=fl2va_path,
             ref2va_path=ref2va_path,
@@ -364,7 +426,7 @@ class MiniMaxH3HybridModelLoader(io.ComfyNode):
             weight_dtype=weight_dtype,
         )
         print(
-            f"[MiniMax H3 Hybrid] fl2va={fl2va_model} ref2va={ref2va_model} "
+            f"[MiniMax H3 Loader] hybrid fl2va={fl2va_model} ref2va={ref2va_model} "
             f"ref AdaLN blocks={ref_start_block}..{ref_end_block}"
         )
         return io.NodeOutput(model)
