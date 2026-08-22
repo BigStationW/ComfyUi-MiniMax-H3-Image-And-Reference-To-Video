@@ -1,4 +1,9 @@
 import math
+import logging
+import inspect
+from functools import wraps
+
+
 import nodes
 import node_helpers
 from comfy_api.latest import ComfyExtension, io
@@ -7,12 +12,208 @@ from comfy_api.latest import ComfyExtension, io
 from comfy_extras.nodes_minimax_h3 import (
     _empty_av_latent,
     _resize,
-    _encode_ref_audio,
+    MiniMaxH3ReferenceToVideo,
     adapt_canvas,
     CANVAS_MULTIPLE,
     REF_IMAGE_SHORT_EDGE,
     FPS,
 )
+
+
+def _encode_ref_audio(audio_vae, audio):
+    """Use ComfyUI's current MiniMax H3 reference-audio implementation.
+
+    In current ComfyUI this helper is a static method on
+    MiniMaxH3ReferenceToVideo rather than a module-level function.
+    """
+    return MiniMaxH3ReferenceToVideo._encode_ref_audio(audio_vae, audio)
+
+
+_H3_PAYLOAD_PATCH_MARKER = "_minimax_h3_keyframe_ref_merge_patch_v2"
+_H3_LAYOUT_PATCH_MARKER = "_minimax_h3_keyframe_ref_layout_patch_v1"
+_H3_TARGET_ANCHOR_KEY = "_minimax_h3_combined_target_anchor"
+_LOG = logging.getLogger("ComfyUI.MiniMaxH3ImageAndReference")
+
+
+def _is_our_combined_keyframes(keyframes):
+    return bool(keyframes) and any(
+        isinstance(kf, dict) and kf.get(_H3_TARGET_ANCHOR_KEY, False)
+        for kf in keyframes
+    )
+
+
+def _ensure_h3_keyframe_ref_merge():
+    """Let this pack's keyframes and Ref2VA refs coexist on older ComfyUI.
+
+    Older MiniMaxH3.extra_conds builds keyframe visual latents first, then the
+    refs branch overwrites that list. PackedLayout still contains both sets of
+    fixed rows, so sampling either crashes or assigns the wrong latent to the
+    wrong rows. Rebuild the list in layout order: keyframes first, refs second.
+
+    This wrapper is deliberately scoped to keyframes produced by this pack.
+    """
+    try:
+        import comfy.model_base as model_base
+    except Exception as e:
+        _LOG.warning("MiniMax H3 payload patch: could not import comfy.model_base: %s", e)
+        return False
+
+    cls = getattr(model_base, "MiniMaxH3", None)
+    if cls is None or not hasattr(cls, "extra_conds"):
+        _LOG.warning("MiniMax H3 payload patch: MiniMaxH3.extra_conds not found.")
+        return False
+
+    current = getattr(cls, "extra_conds")
+    if getattr(current, _H3_PAYLOAD_PATCH_MARKER, False):
+        return True
+
+    @wraps(current)
+    def _patched_extra_conds(self, **kwargs):
+        out = current(self, **kwargs)
+
+        keyframes = kwargs.get("minimax_keyframes", None)
+        refs = kwargs.get("minimax_refs", None)
+        if not refs or not _is_our_combined_keyframes(keyframes):
+            return out
+
+        cond = out.get("minimax_payload", None) if isinstance(out, dict) else None
+        payload = getattr(cond, "cond", None) if cond is not None else None
+        if not isinstance(payload, dict):
+            _LOG.warning(
+                "MiniMax H3 payload patch: could not access minimax_payload; "
+                "combined keyframes+refs may still fail."
+            )
+            return out
+
+        payload["cond_video_latents"] = (
+            [kf["latent"] for kf in keyframes if isinstance(kf, dict) and "latent" in kf]
+            + [ref["latent"] for ref in refs if isinstance(ref, dict) and "latent" in ref]
+        )
+        payload["cond_audio_latents"] = [
+            ref["audio_latent"]
+            for ref in refs
+            if isinstance(ref, dict) and ref.get("audio_latent") is not None
+        ]
+
+        frame_count = kwargs.get("minimax_frame_count", None)
+        if frame_count is not None:
+            payload["frame_count"] = frame_count
+
+        return out
+
+    setattr(_patched_extra_conds, _H3_PAYLOAD_PATCH_MARKER, True)
+    cls.extra_conds = _patched_extra_conds
+    _LOG.info("MiniMax H3 payload patch: enabled keyframe+reference latent merge.")
+    return True
+
+
+def _ensure_h3_keyframe_ref_layout():
+    """Keep first/last keyframes anchored to the TARGET clip when refs exist.
+
+    Old PackedLayout versions calculate first/last keyframe time coordinates
+    from ``text_len`` while Ref2VA references advance the target video's origin.
+    The result is a first-frame guide sitting in reference-time rather than at
+    target frame zero. New ComfyUI versions fixed this natively by computing
+    keyframe coordinates from the reference-adjusted cursor; those versions are
+    detected by the absence of the old ``frame_count`` constructor parameter.
+    """
+    try:
+        import comfy.ldm.minimax.model as mm
+    except Exception as e:
+        _LOG.warning("MiniMax H3 layout patch: could not import minimax model: %s", e)
+        return False
+
+    cls = getattr(mm, "PackedLayout", None)
+    if cls is None:
+        _LOG.warning("MiniMax H3 layout patch: PackedLayout not found.")
+        return False
+
+    current = getattr(cls, "__init__", None)
+    if current is None:
+        return False
+    if getattr(current, _H3_LAYOUT_PATCH_MARKER, False):
+        return True
+
+    # ComfyUI's native guide/ref coexistence update removed frame_count and
+    # already uses: cond_t = target_origin + FRAME_RESCALE * frame_index.
+    try:
+        params = inspect.signature(current).parameters
+    except (TypeError, ValueError):
+        params = {}
+    if "frame_count" not in params:
+        _LOG.info("MiniMax H3 layout patch: native target-relative keyframe layout detected; no patch needed.")
+        return True
+
+    @wraps(current)
+    def _patched_layout_init(
+        self, text_len, latent_t, latent_h, latent_w, audio_t,
+        keyframes=None, refs=None, frame_count=None,
+    ):
+        current(
+            self, text_len, latent_t, latent_h, latent_w, audio_t,
+            keyframes=keyframes, refs=refs, frame_count=frame_count,
+        )
+
+        if not refs or not _is_our_combined_keyframes(keyframes):
+            return
+
+        segments = getattr(self, "segments", None)
+        position_ids = getattr(self, "position_ids", None)
+        if not segments or position_ids is None:
+            raise RuntimeError(
+                "MiniMax H3 combined conditioning: PackedLayout no longer exposes "
+                "segments/position_ids; cannot safely align first_frame to target frame 0."
+            )
+
+        # Old H3 stores finalized segments as (start_row, end_row, kind).
+        target = None
+        cond_segments = []
+        for seg in segments:
+            if not isinstance(seg, (tuple, list)) or len(seg) != 3:
+                continue
+            a, b, kind = seg
+            if kind == "cond":
+                cond_segments.append((int(a), int(b)))
+            elif kind == "video":
+                target = (int(a), int(b))
+
+        if target is None:
+            raise RuntimeError(
+                "MiniMax H3 combined conditioning: target video segment was not found "
+                "in PackedLayout; refusing to guess keyframe positions."
+            )
+        if len(cond_segments) != len(keyframes):
+            raise RuntimeError(
+                "MiniMax H3 combined conditioning: keyframe/cond segment count mismatch "
+                f"({len(keyframes)} keyframes vs {len(cond_segments)} cond segments)."
+            )
+
+        target_a, target_b = target
+        if target_b <= target_a:
+            raise RuntimeError("MiniMax H3 combined conditioning: target video segment is empty.")
+
+        target_origin = float(position_ids[target_a, 0])
+        offset = target_origin - float(text_len)
+        if abs(offset) < 1e-12:
+            return
+
+        # Stock old-core first/last keyframe arithmetic is correct relative to
+        # text_len. References simply move the target origin forward, therefore
+        # adding the same target offset to each cond span preserves first/last
+        # semantics while moving them onto the generated clip's timeline.
+        for a, b in cond_segments:
+            position_ids[a:b, 0] = position_ids[a:b, 0] + offset
+
+        _LOG.debug(
+            "MiniMax H3 layout patch: shifted %d keyframe cond segment(s) by %.6f "
+            "to target origin %.6f.", len(cond_segments), offset, target_origin,
+        )
+
+    setattr(_patched_layout_init, _H3_LAYOUT_PATCH_MARKER, True)
+    cls.__init__ = _patched_layout_init
+    _LOG.info("MiniMax H3 layout patch: enabled target-relative keyframes with references.")
+    return True
+
 
 class MiniMaxH3ImageAndReferenceToVideo(io.ComfyNode):
     """
@@ -127,12 +328,12 @@ class MiniMaxH3ImageAndReferenceToVideo(io.ComfyNode):
             # geometry anchor: plain stretch to canvas
             img = _resize(first_frame[:1], width, height, "disabled")
             images.append(img)
-            keyframes.append({"resolved_frame_index": 0, "image": img})
+            keyframes.append({"resolved_frame_index": 0, "image": img, _H3_TARGET_ANCHOR_KEY: True})
         if last_frame is not None:
             # follower: aspect-preserving cover-crop
             img = _resize(last_frame[:1], width, height, "center")
             images.append(img)
-            keyframes.append({"resolved_frame_index": frame_count - 1, "image": img})
+            keyframes.append({"resolved_frame_index": frame_count - 1, "image": img, _H3_TARGET_ANCHOR_KEY: True})
 
         # ---------- ref2va: images / videos / audio references ----------
         ref_items = []   # for the tokenizer presentation, in request order
@@ -205,6 +406,7 @@ class MiniMaxH3ImageAndReferenceToVideo(io.ComfyNode):
             for kf in keyframes:
                 kf["latent"] = vae.encode(kf.pop("image"))
             payload["minimax_keyframes"] = keyframes
+            payload["minimax_frame_count"] = frame_count
         if ref_blocks:
             payload["minimax_refs"] = ref_blocks
         if payload:
@@ -212,9 +414,15 @@ class MiniMaxH3ImageAndReferenceToVideo(io.ComfyNode):
 
         return io.NodeOutput(cond, latent)
 
+_ensure_h3_keyframe_ref_merge()
+_ensure_h3_keyframe_ref_layout()
+
+
 class MiniMaxH3ImageAndReferenceExtension(ComfyExtension):
     async def get_node_list(self):
         return [MiniMaxH3ImageAndReferenceToVideo]
 
 async def comfy_entrypoint() -> ComfyExtension:
+    _ensure_h3_keyframe_ref_merge()
+    _ensure_h3_keyframe_ref_layout()
     return MiniMaxH3ImageAndReferenceExtension()
