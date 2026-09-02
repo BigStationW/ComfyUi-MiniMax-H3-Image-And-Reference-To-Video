@@ -197,7 +197,9 @@ class MiniMaxH3ImageAndReferenceToVideo(io.ComfyNode):
             ref_blocks.append({"kind": "audio", "ref_audio_t": ref_audio_t, "audio_latent": audio_latent})
 
         # ---------- tokenize + encode (both keyframe images and refs at once) ----------
-        tokens = clip.tokenize(prompt, images=images, minimax_ref_items=ref_items)
+        # Keep reference numbering stable, then include keyframes in the vision context.
+        encoder_items = ref_items + [{"type": "image", "data": image} for image in images]
+        tokens = clip.tokenize(prompt, minimax_ref_items=encoder_items)
         cond = clip.encode_from_tokens_scheduled(tokens)
 
         payload = {}
