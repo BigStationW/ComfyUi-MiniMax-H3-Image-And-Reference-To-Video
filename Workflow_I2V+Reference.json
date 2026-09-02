@@ -108,42 +108,6 @@
       }
     },
     {
-      "id": 125,
-      "type": "KSamplerSelect",
-      "pos": [
-        -510.4366096663671,
-        5010.882102376708
-      ],
-      "size": [
-        210,
-        88.42848432502069
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "SAMPLER",
-          "type": "SAMPLER",
-          "links": [
-            234
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.30.0",
-        "Node name for S&R": "KSamplerSelect"
-      },
-      "widgets_values": [
-        "res_multistep"
-      ],
-      "widgets_values_named": {
-        "sampler_name": "res_multistep"
-      }
-    },
-    {
       "id": 135,
       "type": "PrimitiveFloat",
       "pos": [
@@ -155,7 +119,7 @@
         70
       ],
       "flags": {},
-      "order": 1,
+      "order": 0,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -192,7 +156,7 @@
         82
       ],
       "flags": {},
-      "order": 2,
+      "order": 1,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -230,7 +194,7 @@
         70
       ],
       "flags": {},
-      "order": 3,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -274,7 +238,7 @@
         96.19335088612115
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -572,7 +536,7 @@
         314
       ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -615,7 +579,7 @@
         314
       ],
       "flags": {},
-      "order": 6,
+      "order": 5,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -842,7 +806,7 @@
         88
       ],
       "flags": {},
-      "order": 7,
+      "order": 6,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -868,7 +832,7 @@
         88
       ],
       "flags": {},
-      "order": 8,
+      "order": 7,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -894,7 +858,7 @@
         97.33732588611929
       ],
       "flags": {},
-      "order": 9,
+      "order": 8,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -938,7 +902,7 @@
         120
       ],
       "flags": {},
-      "order": 10,
+      "order": 9,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -1238,7 +1202,7 @@
         88
       ],
       "flags": {},
-      "order": 11,
+      "order": 10,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -1251,6 +1215,42 @@
       },
       "color": "#c09430",
       "bgcolor": "rgba(24,24,27,.9)"
+    },
+    {
+      "id": 125,
+      "type": "KSamplerSelect",
+      "pos": [
+        -510.4366096663671,
+        5010.882102376708
+      ],
+      "size": [
+        210,
+        88.42848432502069
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "SAMPLER",
+          "type": "SAMPLER",
+          "links": [
+            234
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.30.0",
+        "Node name for S&R": "KSamplerSelect"
+      },
+      "widgets_values": [
+        "euler"
+      ],
+      "widgets_values_named": {
+        "sampler_name": "euler"
+      }
     }
   ],
   "links": [
@@ -1496,10 +1496,10 @@
     "VHS_MetadataImage": true,
     "VHS_KeepIntermediate": true,
     "ds": {
-      "scale": 0.8140274938683999,
+      "scale": 0.4594972986357228,
       "offset": [
-        1463.0831371316085,
-        -4204.023797086118
+        2052.047346437077,
+        -4141.787774250215
       ]
     }
   },
